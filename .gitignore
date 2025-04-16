@@ -1,0 +1,9 @@
+*.iml
+.idea/
+.vscode/
+bin/
+out/
+*.env
+*.token
+*.key
+lib/*.jar
