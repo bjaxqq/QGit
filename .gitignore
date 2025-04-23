@@ -6,4 +6,3 @@ out/
 *.env
 *.token
 *.key
-lib/*.jar
