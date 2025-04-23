@@ -59,7 +59,7 @@ public class InputForm {
         gbc.anchor = GridBagConstraints.WEST;
 
         gbc.gridy = 1;
-        JLabel pathLabel = new JLabel("Project Path:");
+        JLabel pathLabel = new JLabel("*Project Path:");
         pathLabel.setFont(fredokaFont.deriveFont(14f));
         panel.add(pathLabel, gbc);
 
@@ -70,7 +70,7 @@ public class InputForm {
 
         gbc.gridx = 0;
         gbc.gridy = 2;
-        JLabel repoLabel = new JLabel("Repository Name:");
+        JLabel repoLabel = new JLabel("*Repository Name:");
         repoLabel.setFont(fredokaFont.deriveFont(14f));
         panel.add(repoLabel, gbc);
 
@@ -93,7 +93,7 @@ public class InputForm {
 
         gbc.gridx = 0;
         gbc.gridy = 4;
-        JLabel visibilityLabel = new JLabel("Visibility:");
+        JLabel visibilityLabel = new JLabel("*Visibility:");
         visibilityLabel.setFont(fredokaFont.deriveFont(14f));
         panel.add(visibilityLabel, gbc);
 
@@ -118,7 +118,13 @@ public class InputForm {
         submitButton.setBackground(Color.darkGray);
         submitButton.setForeground(Color.white);
         submitButton.setPreferredSize(new Dimension(100, 30));
+
+        // When user presses submit
         submitButton.addActionListener(e -> {
+            if (projectPathField.getText().isEmpty() || repoNameField.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Please fill in all fields with a *.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            } 
             String projectPath = getProjectPath();
             String repoName = getRepoName();
             String description = getDescription();
