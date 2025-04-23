@@ -12,6 +12,7 @@ public class InputForm {
     private JTextArea descriptionArea;
     private JRadioButton publicRadio;
     private JRadioButton privateRadio;
+    private InputHandler inputHandler = new InputHandler();
 
     public InputForm() {
         initializeFont();
@@ -110,6 +111,39 @@ public class InputForm {
         visibilityPanel.add(publicRadio);
         visibilityPanel.add(privateRadio);
         panel.add(visibilityPanel, gbc);
+
+
+        JButton submitButton = new JButton("Submit");
+        submitButton.setFont(fredokaFont.deriveFont(14f));
+        submitButton.setBackground(Color.darkGray);
+        submitButton.setForeground(Color.white);
+        submitButton.setPreferredSize(new Dimension(100, 30));
+        submitButton.addActionListener(e -> {
+            String projectPath = getProjectPath();
+            String repoName = getRepoName();
+            String description = getDescription();
+            boolean isPublicRepo = isPublic();
+            inputHandler.setInputData(projectPath, repoName, description, isPublicRepo);
+            
+            System.out.println("Project Path: " + projectPath);
+            System.out.println("Repository Name: " + repoName);
+            System.out.println("Description: " + description);
+            System.out.println("Visibility: " + (isPublicRepo ? "Public" : "Private"));
+
+            // Clear fields after submission
+            projectPathField.setText("");
+            repoNameField.setText("");
+            descriptionArea.setText("");
+            publicRadio.setSelected(true);
+            privateRadio.setSelected(false);
+
+            
+        });
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        panel.add(submitButton, gbc);
+
 
         frame.setVisible(true);
     }
