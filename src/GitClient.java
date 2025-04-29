@@ -70,19 +70,20 @@ public class GitClient {
         
         //dont need to make empty files, the proper files were already made
 
-        // // Create empty README.md if requested
-        // if (input != null && input.addReadme()) {
-        //     createFile("README.md", input.getReadmeContent());
-        // }
+        // Create empty README.md if requested
+
+        //creates gitignore and readme files.
+        if (input != null && input.addReadme()) {
+            createReadMe();
+        }
         
-        // // Create empty .gitignore if requested
-        // if (input != null && input.addGitignore()) {
-        //     createFile(".gitignore", input.getGitignoreContent());
-        // }
+        // Create empty .gitignore if requested
+
+
+        if (input != null && input.addGitignore()) {
+            createGitIgnore();
+        }
         
-        //Added back the gitignore and readme
-        createGitIgnore();
-        createReadMe();
 
         // Make initial commit
         gitSubprocessClient.gitAddAll();
@@ -149,14 +150,17 @@ public class GitClient {
     }
 
     // Generic file creation method
-    private void createFile(String filename, String content) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(projectPath + "/" + filename))) {
-            if (content != null && !content.isEmpty()) {
-                writer.write(content);
-            }
-        }
-        gitSubprocessClient.gitAddFile(filename);
-    }
+
+    //dont need
+
+    // private void createFile(String filename, String content) throws IOException {
+    //     try (BufferedWriter writer = new BufferedWriter(new FileWriter(projectPath + "/" + filename))) {
+    //         if (content != null && !content.isEmpty()) {
+    //             writer.write(content);
+    //         }
+    //     }
+    //     gitSubprocessClient.gitAddFile(filename);
+    // }
 
     // Creates the GitHub repository
     private void createGithubRepo() {

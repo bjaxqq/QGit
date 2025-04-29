@@ -1,6 +1,6 @@
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import javax.swing.*;
 
 public class InputForm {
     private JFrame frame;
@@ -64,7 +64,7 @@ public class InputForm {
     // Adds the logo image
     private void createLogo() {
         try {
-            ImageIcon logoIcon = new ImageIcon("assets/images/QGitLogo.jpg");
+            ImageIcon logoIcon = new ImageIcon("assets/images/QGitLogo.png");
             panel.add(new JLabel(logoIcon), 
                 createConstraints(0, 0, 2, GridBagConstraints.CENTER));
         } catch (Exception e) {
