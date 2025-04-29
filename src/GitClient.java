@@ -1,161 +1,140 @@
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
+import javax.swing.JOptionPane;
 import git.tools.client.GitSubprocessClient;
 import github.tools.client.GitHubApiClient;
 import github.tools.client.RequestParams;
-import github.tools.responseObjects.*;
+import github.tools.responseObjects.CreateRepoResponse;
 
-
-public class GitClient 
-{
+public class GitClient {
     private InputHandler input;
-
     private String username;
     private String token;
-    
     private String projectPath;
     private String repoName;
     private String description;
     private boolean isPublic;
-
-    private String repoLink;
-
     private GitHubApiClient gitHubApiClient;
     private GitSubprocessClient gitSubprocessClient;
 
-    public GitClient(String t)
-    {
-        username = "bbailor06";
-        token = t;
-        projectPath = "C:\\Users\\bensa\\College\\25SP\\CSC109\\testRepoFolder";
-        repoName = "testRepo";
-        description = "This is a repo made to test a project for CSC109";
-        isPublic = false;
-
-        repoLink = "https://github.com/" + "/" + username + "/" + repoName;
-
-        createGitRepo();
-        createGitIgnore();
-        createReadMe();
-        addRemoteOrigin();
+    // Constructor for testing with hardcoded values
+    public GitClient(String token) {
+        this.username = "bbailor06";
+        this.token = token;
+        this.projectPath = "C:\\Users\\bensa\\College\\25SP\\CSC109\\testRepoFolder";
+        this.repoName = "testRepo";
+        this.description = "This is a repo made to test a project for CSC109";
+        this.isPublic = false;
+        executeWorkflow();
     }
 
-    public GitClient(InputHandler input)
-    {
+    // Main constructor using input from GUI
+    public GitClient(InputHandler input) {
         this.input = input;
-
-        //token = input.getToken();
-        //username = input.getUsername();
-
-        username = "bbailor06";
-        token = "";
-
-        projectPath = input.getProjectPath();
-        repoName = input.getRepoName();
-        description = input.getDescription();
-        isPublic = input.isPublic();
+        this.username = input.getUsername();
+        this.token = input.getToken();
+        this.projectPath = input.getProjectPath();
+        this.repoName = input.getRepoName();
+        this.description = input.getDescription();
+        this.isPublic = input.isPublic();
+        executeWorkflow();
     }
 
-    public void createGitRepo()
-    {
-        gitSubprocessClient = new GitSubprocessClient(projectPath);
-
-        String gitInit = gitSubprocessClient.gitInit();
+    // Main workflow executor
+    private void executeWorkflow() {
+        try {
+            // Initialize Git client for the specified path
+            gitSubprocessClient = new GitSubprocessClient(projectPath);
+            
+            // Step 1: Create local repository structure
+            createLocalRepo();
+            
+            // Step 2: Create remote GitHub repository
+            createGithubRepo();
+            
+            // Step 3: Push local content to GitHub
+            pushToGithub();
+            
+            // Show success message
+            showSuccessMessage();
+        } catch (Exception e) {
+            handleError(e);
+        }
     }
 
-    public void createGitIgnore()
-    {
-        String[] gitignoreContents = {
-            "#JAVA",
-            "bin/",
-            "build/",
-            "out/",
-            ".mtj.tmp/",
-            "*.class",
-            "*.jar",
-            "*.war",
-            "*.iml",
-            "*.ear",
-            "*.nar",
-            "hs_err_pid*",
-            "replay_pid*",
-            "",
-            "#VSCODE",
-            ".vscode/",
-            ".code-workspace",
-            "",
-            "#MISC",
-            "*.log"
-        };
+    // Creates local Git repository and files
+    private void createLocalRepo() throws Exception {
+        // Initialize empty Git repository
+        gitSubprocessClient.gitInit();
         
-        String gitAddFile = gitSubprocessClient.gitAddFile(projectPath);
+        // Create empty README.md if requested
+        if (input != null && input.addReadme()) {
+            createFile("README.md", input.getReadmeContent());
+        }
+        
+        // Create empty .gitignore if requested
+        if (input != null && input.addGitignore()) {
+            createFile(".gitignore", input.getGitignoreContent());
+        }
+        
+        // Make initial commit
+        gitSubprocessClient.gitAddAll();
+        gitSubprocessClient.gitCommit("Initial commit");
+    }
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(projectPath + "/.gitignore"))) 
-        {
-            for (String line : gitignoreContents) {
-                writer.write(line);
-                writer.newLine();
+    // Generic file creation method
+    private void createFile(String filename, String content) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(projectPath + "/" + filename))) {
+            if (content != null && !content.isEmpty()) {
+                writer.write(content);
             }
-        } 
-        catch (IOException e)
-        {
-            System.err.println("An error occurred while creating the .gitignore file.");
-        }        
+        }
+        gitSubprocessClient.gitAddFile(filename);
     }
 
-    public void createReadMe()
-    {
-        String readmeContents = "#" + repoName;
-        
-        String gitAddFile = gitSubprocessClient.gitAddFile(projectPath);
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(projectPath + "/README.md"))) 
-        {
-            writer.write(readmeContents);
-            writer.newLine();
-        } 
-        catch (IOException e)
-        {
-            System.err.println("An error occurred while creating the .gitignore file.");
-        }      
-    }
-
-    public void initCommit()
-    {
-        String gitAddAll = gitSubprocessClient.gitAddAll();
-
-        String commitMessage = "Initial commit.";
-        String commit = gitSubprocessClient.gitCommit(commitMessage);
-
-        String push = gitSubprocessClient.gitPush("master");
-    }
-
-    public void createGithubRepo()
-    {
-        RequestParams requestParams = new RequestParams();
-
+    // Creates the GitHub repository
+    private void createGithubRepo() {
         gitHubApiClient = new GitHubApiClient(username, token);
-
-        requestParams.addParam("name", repoName);
-        requestParams.addParam("description", description);
-        requestParams.addParam("private", !isPublic);
         
-        CreateRepoResponse createRepo = gitHubApiClient.createRepo(requestParams);
+        RequestParams params = new RequestParams();
+        params.addParam("name", repoName);
+        params.addParam("description", description);
+        params.addParam("private", !isPublic);
+        
+        CreateRepoResponse response = gitHubApiClient.createRepo(params);
+        if (response == null) {
+            throw new RuntimeException("Failed to create GitHub repository");
+        }
     }
 
-    public void addRemoteOrigin()
-    {
-        String gitRemoteAdd = gitSubprocessClient.gitRemoteAdd("origin", repoLink);
+    // Pushes to GitHub
+    private void pushToGithub() {
+        String remoteUrl = "https://github.com/" + username + "/" + repoName + ".git";
+        gitSubprocessClient.gitRemoteAdd("origin", remoteUrl);
+        gitSubprocessClient.gitPush("origin");
     }
 
-    
+    // Shows success message
+    private void showSuccessMessage() {
+        String message = "Repository created successfully!\n" +
+                       "GitHub URL: https://github.com/" + username + "/" + repoName;
+        
+        System.out.println(message);
+        if (input != null) {
+            JOptionPane.showMessageDialog(null, message, "Success", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
 
-
-
-
-
-
+    // Handles errors
+    private void handleError(Exception e) {
+        System.err.println("Error occurred: " + e.getMessage());
+        e.printStackTrace();
+        if (input != null) {
+            JOptionPane.showMessageDialog(null, 
+                "Error creating repository: " + e.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
 }

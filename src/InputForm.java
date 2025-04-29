@@ -7,101 +7,113 @@ public class InputForm {
     private JPanel panel;
     private Font fredokaFont;
     
+    // Form fields
+    private JTextField usernameField;
+    private JPasswordField tokenField;
     private JTextField projectPathField;
     private JTextField repoNameField;
     private JTextArea descriptionArea;
     private JRadioButton publicRadio;
     private JRadioButton privateRadio;
-    private InputHandler inputHandler = new InputHandler();
+    private JCheckBox addReadmeCheck;
+    private JCheckBox addGitignoreCheck;
 
     public InputForm() {
         initializeFont();
         initialize();
     }
 
+    // Loads custom font
     private void initializeFont() {
         try {
-            File fontFile = new File("assets/fonts/Fredoka.ttf");
-            fredokaFont = Font.createFont(Font.TRUETYPE_FONT, fontFile);
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            ge.registerFont(fredokaFont);
+            fredokaFont = Font.createFont(Font.TRUETYPE_FONT, 
+                new File("assets/fonts/Fredoka.ttf"));
+            GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(fredokaFont);
         } catch (Exception e) {
-            System.err.println("Error loading font: " + e.getMessage());
             fredokaFont = new Font("SansSerif", Font.PLAIN, 12);
         }
     }
 
+    // Initializes and lays out the GUI components
     private void initialize() {
+        createMainWindow();
+        createLogo();
+        createTitle();
+        createInputFields();
+        createVisibilityOptions();
+        createFileOptions();
+        createSubmitButton();
+        createDisclaimer();
+        
+        frame.setVisible(true);
+    }
+
+    // Creates the main window
+    private void createMainWindow() {
         frame = new JFrame("QGIT");
-        frame.setSize(500, 600);
+        frame.setSize(500, 700);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         
         panel = new JPanel();
         panel.setBackground(Color.lightGray);
         panel.setLayout(new GridBagLayout());
-        frame.add(panel);
+        frame.add(new JScrollPane(panel));
+    }
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+    // Adds the logo image
+    private void createLogo() {
+        try {
+            ImageIcon logoIcon = new ImageIcon("assets/images/QGitLogo.jpg");
+            panel.add(new JLabel(logoIcon), 
+                createConstraints(0, 0, 2, GridBagConstraints.CENTER));
+        } catch (Exception e) {
+            System.err.println("Error loading logo: " + e.getMessage());
+        }
+    }
 
+    // Adds the title
+    private void createTitle() {
         JLabel title = new JLabel("Welcome to QGIT!");
         title.setForeground(Color.darkGray);
         title.setFont(fredokaFont.deriveFont(Font.BOLD, 24f));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        panel.add(title, gbc);
+        panel.add(title, createConstraints(0, 1, 2, GridBagConstraints.CENTER));
+    }
 
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-
-        gbc.gridy = 1;
-        JLabel pathLabel = new JLabel("*Project Path:");
-        pathLabel.setFont(fredokaFont.deriveFont(14f));
-        panel.add(pathLabel, gbc);
-
-        gbc.gridx = 1;
-        projectPathField = new JTextField(20);
-        projectPathField.setFont(fredokaFont.deriveFont(14f));
-        panel.add(projectPathField, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        JLabel repoLabel = new JLabel("*Repository Name:");
-        repoLabel.setFont(fredokaFont.deriveFont(14f));
-        panel.add(repoLabel, gbc);
-
-        gbc.gridx = 1;
-        repoNameField = new JTextField(20);
-        repoNameField.setFont(fredokaFont.deriveFont(14f));
-        panel.add(repoNameField, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        JLabel descLabel = new JLabel("Description:");
-        descLabel.setFont(fredokaFont.deriveFont(14f));
-        panel.add(descLabel, gbc);
-
-        gbc.gridx = 1;
+    // Creates all input fields
+    private void createInputFields() {
+        // Username
+        panel.add(new JLabel("*GitHub Username:"), createConstraints(0, 2, 1, GridBagConstraints.WEST));
+        usernameField = createTextField(1, 2);
+        
+        // Token
+        panel.add(new JLabel("*GitHub Token:"), createConstraints(0, 3, 1, GridBagConstraints.WEST));
+        tokenField = new JPasswordField(20);
+        tokenField.setFont(fredokaFont.deriveFont(14f));
+        panel.add(tokenField, createConstraints(1, 3, 1, GridBagConstraints.WEST));
+        
+        // Project Path
+        panel.add(new JLabel("*Project Path:"), createConstraints(0, 4, 1, GridBagConstraints.WEST));
+        projectPathField = createTextField(1, 4);
+        
+        // Repository Name
+        panel.add(new JLabel("*Repository Name:"), createConstraints(0, 5, 1, GridBagConstraints.WEST));
+        repoNameField = createTextField(1, 5);
+        
+        // Description
+        panel.add(new JLabel("Description:"), createConstraints(0, 6, 1, GridBagConstraints.WEST));
         descriptionArea = new JTextArea(3, 20);
         descriptionArea.setFont(fredokaFont.deriveFont(14f));
-        descriptionArea.setLineWrap(true);
-        panel.add(new JScrollPane(descriptionArea), gbc);
+        panel.add(new JScrollPane(descriptionArea), createConstraints(1, 6, 1, GridBagConstraints.WEST));
+    }
 
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        JLabel visibilityLabel = new JLabel("*Visibility:");
-        visibilityLabel.setFont(fredokaFont.deriveFont(14f));
-        panel.add(visibilityLabel, gbc);
-
-        gbc.gridx = 1;
+    // Creates visibility radio buttons
+    private void createVisibilityOptions() {
+        panel.add(new JLabel("*Visibility:"), createConstraints(0, 7, 1, GridBagConstraints.WEST));
+        
         JPanel visibilityPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         publicRadio = new JRadioButton("Public", true);
         privateRadio = new JRadioButton("Private");
-        
         publicRadio.setFont(fredokaFont.deriveFont(14f));
         privateRadio.setFont(fredokaFont.deriveFont(14f));
         
@@ -110,52 +122,93 @@ public class InputForm {
         visibilityGroup.add(privateRadio);
         visibilityPanel.add(publicRadio);
         visibilityPanel.add(privateRadio);
-        panel.add(visibilityPanel, gbc);
-
-
-        JButton submitButton = new JButton("Submit");
-        submitButton.setFont(fredokaFont.deriveFont(14f));
-        submitButton.setBackground(Color.darkGray);
-        submitButton.setForeground(Color.white);
-        submitButton.setPreferredSize(new Dimension(100, 30));
-
-        // When user presses submit
-        submitButton.addActionListener(e -> {
-            if (projectPathField.getText().isEmpty() || repoNameField.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(frame, "Please fill in all fields with a *.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            } 
-            String projectPath = getProjectPath();
-            String repoName = getRepoName();
-            String description = getDescription();
-            boolean isPublicRepo = isPublic();
-            inputHandler.setInputData(projectPath, repoName, description, isPublicRepo);
-            
-            System.out.println("Project Path: " + projectPath);
-            System.out.println("Repository Name: " + repoName);
-            System.out.println("Description: " + description);
-            System.out.println("Visibility: " + (isPublicRepo ? "Public" : "Private"));
-
-            // Clear fields after submission
-            projectPathField.setText("");
-            repoNameField.setText("");
-            descriptionArea.setText("");
-            publicRadio.setSelected(true);
-            privateRadio.setSelected(false);
-
-            
-        });
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        gbc.gridwidth = 2;
-        panel.add(submitButton, gbc);
-
-
-        frame.setVisible(true);
+        panel.add(visibilityPanel, createConstraints(1, 7, 1, GridBagConstraints.WEST));
     }
 
-    public String getProjectPath() { return projectPathField.getText(); }
-    public String getRepoName() { return repoNameField.getText(); }
-    public String getDescription() { return descriptionArea.getText(); }
-    public boolean isPublic() { return publicRadio.isSelected(); }
+    // Creates file options checkboxes
+    private void createFileOptions() {
+        // README checkbox
+        addReadmeCheck = new JCheckBox("Add README.md", true);
+        addReadmeCheck.setFont(fredokaFont.deriveFont(14f));
+        panel.add(addReadmeCheck, createConstraints(0, 8, 2, GridBagConstraints.WEST));
+        
+        // .gitignore checkbox
+        addGitignoreCheck = new JCheckBox("Add .gitignore", true);
+        addGitignoreCheck.setFont(fredokaFont.deriveFont(14f));
+        panel.add(addGitignoreCheck, createConstraints(0, 9, 2, GridBagConstraints.WEST));
+    }
+
+    // Creates submit button
+    private void createSubmitButton() {
+        JButton submitButton = new JButton("Create Repository");
+        submitButton.setFont(fredokaFont.deriveFont(14f));
+        submitButton.setBackground(new Color(46, 125, 50));
+        submitButton.setForeground(Color.WHITE);
+        submitButton.addActionListener(e -> submitForm());
+        panel.add(submitButton, createConstraints(0, 10, 2, GridBagConstraints.CENTER));
+    }
+
+    // Creates disclaimer
+    private void createDisclaimer() {
+        JLabel disclaimer = new JLabel("<html><center>Prototype version - not for commercial use</center></html>");
+        disclaimer.setFont(fredokaFont.deriveFont(Font.ITALIC, 12f));
+        disclaimer.setForeground(Color.GRAY);
+        panel.add(disclaimer, createConstraints(0, 11, 2, GridBagConstraints.CENTER));
+    }
+
+    // Helper method to create text fields
+    private JTextField createTextField(int gridx, int gridy) {
+        JTextField field = new JTextField(20);
+        field.setFont(fredokaFont.deriveFont(14f));
+        panel.add(field, createConstraints(gridx, gridy, 1, GridBagConstraints.WEST));
+        return field;
+    }
+
+    // Helper method to create GridBagConstraints
+    private GridBagConstraints createConstraints(int gridx, int gridy, int gridwidth, int anchor) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.gridx = gridx;
+        gbc.gridy = gridy;
+        gbc.gridwidth = gridwidth;
+        gbc.anchor = anchor;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        return gbc;
+    }
+
+    // Handles form submission
+    private void submitForm() {
+        if (validateInputs()) {
+            InputHandler inputHandler = new InputHandler();
+            inputHandler.setInputData(
+                usernameField.getText(),
+                new String(tokenField.getPassword()),
+                projectPathField.getText(),
+                repoNameField.getText(),
+                descriptionArea.getText(),
+                publicRadio.isSelected(),
+                addReadmeCheck.isSelected(),
+                "", // Empty README content
+                addGitignoreCheck.isSelected(),
+                ""  // Empty .gitignore content
+            );
+            new GitClient(inputHandler);
+        }
+    }
+
+    // Validates required fields
+    private boolean validateInputs() {
+        if (usernameField.getText().isEmpty() || 
+            tokenField.getPassword().length == 0 ||
+            projectPathField.getText().isEmpty() || 
+            repoNameField.getText().isEmpty()) {
+            
+            JOptionPane.showMessageDialog(frame, 
+                "Please fill in all required fields (*)", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
 }
