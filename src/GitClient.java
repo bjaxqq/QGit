@@ -20,7 +20,7 @@ public class GitClient {
 
     // Constructor for testing with hardcoded values
     public GitClient(String token) {
-        this.username = "bbailor06";
+        this.username = "bbailor";
         this.token = token;
         this.projectPath = "C:\\Users\\bensa\\College\\25SP\\CSC109\\testRepoFolder";
         this.repoName = "testRepo";
@@ -68,19 +68,84 @@ public class GitClient {
         // Initialize empty Git repository
         gitSubprocessClient.gitInit();
         
-        // Create empty README.md if requested
-        if (input != null && input.addReadme()) {
-            createFile("README.md", input.getReadmeContent());
-        }
+        //dont need to make empty files, the proper files were already made
+
+        // // Create empty README.md if requested
+        // if (input != null && input.addReadme()) {
+        //     createFile("README.md", input.getReadmeContent());
+        // }
         
-        // Create empty .gitignore if requested
-        if (input != null && input.addGitignore()) {
-            createFile(".gitignore", input.getGitignoreContent());
-        }
+        // // Create empty .gitignore if requested
+        // if (input != null && input.addGitignore()) {
+        //     createFile(".gitignore", input.getGitignoreContent());
+        // }
         
+        //Added back the gitignore and readme
+        createGitIgnore();
+        createReadMe();
+
         // Make initial commit
         gitSubprocessClient.gitAddAll();
         gitSubprocessClient.gitCommit("Initial commit");
+    }
+
+    //Creates a gitignore file with some basic files to be ignored.
+    public void createGitIgnore()
+    {
+        String[] gitignoreContents = {
+            "#JAVA",
+            "bin/",
+            "build/",
+            "out/",
+            ".mtj.tmp/",
+            "*.class",
+            "*.jar",
+            "*.war",
+            "*.iml",
+            "*.ear",
+            "*.nar",
+            "hs_err_pid*",
+            "replay_pid*",
+            "",
+            "#VSCODE",
+            ".vscode/",
+            ".code-workspace",
+            "",
+            "#MISC",
+            "*.log"
+        };
+
+        String gitAddFile = gitSubprocessClient.gitAddFile(projectPath);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(projectPath + "/.gitignore"))) 
+        {
+            for (String line : gitignoreContents) {
+                writer.write(line);
+                writer.newLine();
+            }
+        } 
+        catch (IOException e)
+        {
+            System.err.println("An error occurred while creating the .gitignore file.");
+        }        
+    }
+
+    //Creates a readme file with the repo name as a markdown header as content.
+    public void createReadMe()
+    {
+        String readmeContents = "#" + repoName;
+
+        String gitAddFile = gitSubprocessClient.gitAddFile(projectPath);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(projectPath + "/README.md"))) 
+        {
+            writer.write(readmeContents);
+            writer.newLine();
+        } 
+        catch (IOException e)
+        {
+            System.err.println("An error occurred while creating the .gitignore file.");
+        }      
     }
 
     // Generic file creation method
@@ -112,7 +177,11 @@ public class GitClient {
     private void pushToGithub() {
         String remoteUrl = "https://github.com/" + username + "/" + repoName + ".git";
         gitSubprocessClient.gitRemoteAdd("origin", remoteUrl);
-        gitSubprocessClient.gitPush("origin");
+
+        //did not show up on github for some reason
+        //gitSubprocessClient.gitPush("master");
+
+        gitSubprocessClient.runGitCommand("push origin master");
     }
 
     // Shows success message
